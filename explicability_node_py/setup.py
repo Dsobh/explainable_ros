@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'explicability_node = explicability_node_py.explicability_node:main',
+            'explicability_node_client = explicability_node_py.explicability_node_client:main'        
         ],
     },
 )
