@@ -15,12 +15,13 @@
 import rclpy
 from simple_node import Node
 from rcl_interfaces.msg import Log
+from typing import List
 
 from explicability_msgs.srv import Question
 from task_creation_chain import TaskCreationChain
 
 from langchain.vectorstores import Chroma
-from langchain.prompts import PromptTemplate
+from langchain.docstore.document import Document
 
 from llama_ros.langchain import LlamaROS
 from llama_ros.langchain import LlamaROSEmbeddings
@@ -40,7 +41,8 @@ class ExplainabilityNode(Node):
             Question, "question", self.question_server_callback)
 
         # Model and embeddings from llama_ros
-        self.local_llm = LlamaROS(node=self, temp=0.0)
+        local_llm = LlamaROS(node=self, temp=0.0)
+        self.question_chain = TaskCreationChain.from_llm(local_llm)
         embeddings = LlamaROSEmbeddings(node=self)
 
         # Chroma Database
@@ -48,29 +50,27 @@ class ExplainabilityNode(Node):
 
         self.retriever = self.db.as_retriever(search_kwargs={"k": 10})
 
-        qa = RetrievalQA.from_chain_type(
-            llm=local_llm,
-            chain_type="stuff",  # try other chains types as well. refine, map_reduce, map_rerank
-            retriever=self.retriever,
-            return_source_documents=True,  # verbose=True,
-            callbacks=callback_manager,
-            chain_type_kwargs={"prompt": prompt, "memory": memory},
-        )
-
-        self.qa = qa
-
     # rosout subscription callback
-    def listener_callback(self, log):
+    def listener_callback(self, log: Log) -> None:
         print('Log Received: "/s"' & log.msg)
         # Add documents form rosout subscription
-        self.db.add_documents(log.msg)
+        self.db.add_documents([log.msg])
 
     # Server callback
-    def question_server_callback(self, request, response):
+    def question_server_callback(
+        self,
+        request: Question.Request,
+        response: Question.Response
+    ) -> Question.Response:
 
-        retriever = self.retriever.get_relevant_documents(response.question)
+        retriever: List[Document] = self.retriever.get_relevant_documents(
+            request.question)
 
-        task_creation_chain = TaskCreationChain.from_llm(self.local_llm)
+        logs = ""
+        for d in retriever:
+            logs += d.page_content() + "\n"
+
+        answer = self.question_chain.run(logs=logs, question=request.question)
 
         # Server response
         response.answer = "Respuesta:" + answer
