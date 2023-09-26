@@ -1,9 +1,0 @@
-source;share/explicability_node_py/hook/pythonpath.ps1
-source;share/explicability_node_py/hook/pythonpath.dsv
-source;share/explicability_node_py/hook/pythonpath.sh
-source;share/explicability_node_py/hook/ament_prefix_path.ps1
-source;share/explicability_node_py/hook/ament_prefix_path.dsv
-source;share/explicability_node_py/hook/ament_prefix_path.sh
-source;../../build/explicability_node_py/share/explicability_node_py/hook/pythonpath_develop.ps1
-source;../../build/explicability_node_py/share/explicability_node_py/hook/pythonpath_develop.dsv
-source;../../build/explicability_node_py/share/explicability_node_py/hook/pythonpath_develop.sh
