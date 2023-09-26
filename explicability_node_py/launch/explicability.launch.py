@@ -7,22 +7,24 @@ def generate_launch_description():
 
     return LaunchDescription([
         create_llama_launch(
-            n_ctx=512,
+            n_ctx=4096,
+
+            n_gpu_layers=20,
 
             n_threads=4,
-            n_predict=512,
-            n_batch=8,
+            n_predict=-1,
+            n_batch=512,
 
             model="marcoroni-13b.Q4_0.gguf",
 
-            prefix="\n\n### Instruction:\n",
-            suffix="\n\n### Response:\n",
-            stop="### Instruction:\n",
-        ),
-
-        Node(
-            package="explicability_node_py",
-            executable="explicability_node",
-            name='explicability'
+            # prefix="\n\n### Instruction:\n",
+            # suffix="\n\n### Response:\n",
+            stop="### Instruction:\n"
         )
+
+        # Node(
+        #    package="explicability_node_py",
+        #    executable="explicability_node",
+        #    name='explicability'
+        # )
     ])

@@ -18,7 +18,7 @@ from rcl_interfaces.msg import Log
 from typing import List
 
 from explicability_msgs.srv import Question
-from task_creation_chain import TaskCreationChain
+from explicability_node_py.task_creation_chain import TaskCreationChain
 
 from langchain.vectorstores import Chroma
 from langchain.docstore.document import Document
@@ -30,12 +30,6 @@ from llama_ros.langchain import LlamaROSEmbeddings
 class ExplainabilityNode(Node):
     def __init__(self):
         super().__init__('explainability_node')
-        self.subscription = self.create_subscription(
-            Log,
-            '/rosout',
-            self.listener_callback,
-            10)
-        self.subscription
 
         self.srv = self.create_service(
             Question, "question", self.question_server_callback)
@@ -50,11 +44,19 @@ class ExplainabilityNode(Node):
 
         self.retriever = self.db.as_retriever(search_kwargs={"k": 10})
 
+        self.subscription = self.create_subscription(
+            Log,
+            '/rosout',
+            self.listener_callback,
+            100)
+
     # rosout subscription callback
     def listener_callback(self, log: Log) -> None:
-        print('Log Received: "/s"' & log.msg)
         # Add documents form rosout subscription
-        self.db.add_documents([log.msg])
+        # self.get_logger().info("Este es el log que se lee del rosout: " + log.msg)
+        # self.get_logger().info("callbacl del rosout antes del add")
+        self.db.add_texts(texts=[log.msg])
+        # self.get_logger().info("callback del rosout despues del add")
 
     # Server callback
     def question_server_callback(
@@ -63,12 +65,16 @@ class ExplainabilityNode(Node):
         response: Question.Response
     ) -> Question.Response:
 
+        self.get_logger().info("Question Service")
+
         retriever: List[Document] = self.retriever.get_relevant_documents(
             request.question)
 
+        self.get_logger().info("Data Retrieved")
+
         logs = ""
         for d in retriever:
-            logs += d.page_content() + "\n"
+            logs += d.page_content + "\n"
 
         answer = self.question_chain.run(logs=logs, question=request.question)
 
@@ -79,11 +85,8 @@ class ExplainabilityNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-
     node = ExplainabilityNode()
-
-    rclpy.spin(node)
-
+    node.join_spin()
     node.destroy_node()
     rclpy.shutdown()
 

@@ -12,11 +12,11 @@ class TaskCreationChain(LLMChain):
         task_creation_template = (
             "You are an explainability AI for autonomous robots.\n"
 
-            " You have the following robot logs:\n"
+            "You have the following robot logs:\n"
             "{logs}"
 
             "\n\n### Instruction:\n"
-            "Answer the user question: {question},"
+            "Answer the question: {question}"
 
             "\n\n### Response:\n"
         )
