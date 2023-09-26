@@ -1,0 +1,18 @@
+[0.664s] Invoking command in '/home/dsobh/ros2_ws/src/explainability/build/explicability_node_py': PYTHONPATH=/home/dsobh/ros2_ws/src/explainability/build/explicability_node_py/prefix_override:/home/dsobh/ros2_ws/src/explainability/install/explicability_node_py/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --editable --build-directory /home/dsobh/ros2_ws/src/explainability/build/explicability_node_py/build --no-deps install_data
+[0.913s] running develop
+[1.084s] running egg_info
+[1.084s] writing explicability_node_py.egg-info/PKG-INFO
+[1.084s] writing dependency_links to explicability_node_py.egg-info/dependency_links.txt
+[1.084s] writing entry points to explicability_node_py.egg-info/entry_points.txt
+[1.084s] writing requirements to explicability_node_py.egg-info/requires.txt
+[1.084s] writing top-level names to explicability_node_py.egg-info/top_level.txt
+[1.086s] reading manifest file 'explicability_node_py.egg-info/SOURCES.txt'
+[1.092s] writing manifest file 'explicability_node_py.egg-info/SOURCES.txt'
+[1.093s] running build_ext
+[1.093s] Creating /home/dsobh/ros2_ws/src/explainability/install/explicability_node_py/lib/python3.10/site-packages/explicability-node-py.egg-link (link to .)
+[1.094s] Installing explicability_node script to /home/dsobh/ros2_ws/src/explainability/install/explicability_node_py/lib/explicability_node_py
+[1.094s] Installing explicability_node_client script to /home/dsobh/ros2_ws/src/explainability/install/explicability_node_py/lib/explicability_node_py
+[1.094s] 
+[1.094s] Installed /home/dsobh/ros2_ws/src/explainability/build/explicability_node_py
+[1.094s] running install_data
+[1.118s] Invoked command in '/home/dsobh/ros2_ws/src/explainability/build/explicability_node_py' returned '0': PYTHONPATH=/home/dsobh/ros2_ws/src/explainability/build/explicability_node_py/prefix_override:/home/dsobh/ros2_ws/src/explainability/install/explicability_node_py/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --editable --build-directory /home/dsobh/ros2_ws/src/explainability/build/explicability_node_py/build --no-deps install_data

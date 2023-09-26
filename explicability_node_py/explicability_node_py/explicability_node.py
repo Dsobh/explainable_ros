@@ -50,13 +50,14 @@ class ExplainabilityNode(Node):
             self.listener_callback,
             100)
 
+        self.logsNumber = 0
+
     # rosout subscription callback
     def listener_callback(self, log: Log) -> None:
+        self.logsNumber += 1
         # Add documents form rosout subscription
-        # self.get_logger().info("Este es el log que se lee del rosout: " + log.msg)
-        # self.get_logger().info("callbacl del rosout antes del add")
         self.db.add_texts(texts=[log.msg])
-        # self.get_logger().info("callback del rosout despues del add")
+        self.get_logger().info("Number of logs received= " + str(self.logsNumber))
 
     # Server callback
     def question_server_callback(
