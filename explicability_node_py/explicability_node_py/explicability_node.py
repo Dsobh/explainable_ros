@@ -40,7 +40,10 @@ class ExplainabilityNode(Node):
         embeddings = LlamaROSEmbeddings(node=self)
 
         # Chroma Database
-        self.db = Chroma(embedding_function=embeddings)
+        self.db = Chroma(
+            collection_name="collection",
+            persist_directory="./DB",
+            embedding_function=embeddings)
 
         self.retriever = self.db.as_retriever(search_kwargs={"k": 10})
 
@@ -56,8 +59,12 @@ class ExplainabilityNode(Node):
     def listener_callback(self, log: Log) -> None:
         self.logsNumber += 1
         # Add documents form rosout subscription
-        self.db.add_texts(texts=[log.msg])
-        self.get_logger().info("Number of logs received= " + str(self.logsNumber))
+        self.db.aadd_texts(texts=[log.msg])
+        # self.get_logger().info("Number of logs received= " +
+        #                       str(self.logsNumber) + "--- Msg received = " + log.msg)
+
+        print("Number of logs received= " + str(self.logsNumber) +
+              "--- Msg received = " + log.msg)
 
     # Server callback
     def question_server_callback(
@@ -66,6 +73,7 @@ class ExplainabilityNode(Node):
         response: Question.Response
     ) -> Question.Response:
 
+        self.db.persist()
         self.get_logger().info("Question Service")
 
         retriever: List[Document] = self.retriever.get_relevant_documents(
