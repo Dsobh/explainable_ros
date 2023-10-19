@@ -36,7 +36,8 @@ class ExplainabilityNode(Node):
         self.retriever = self.db.as_retriever(search_kwargs={"k": 10})
 
         self.srv = self.create_service(
-            Question, "question", self.question_server_callback)
+            Question, "question", self.question_server_callback,
+            callback_group=ReentrantCallbackGroup())
 
         self.subscription = self.create_subscription(
             Log,
