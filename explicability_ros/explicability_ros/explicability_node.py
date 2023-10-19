@@ -1,41 +1,27 @@
-# Copyright 2016 Open Source Robotics Foundation, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+
+import time
+from typing import List
 
 import rclpy
 from simple_node import Node
 from rclpy.callback_groups import ReentrantCallbackGroup
 
 from rcl_interfaces.msg import Log
-from typing import List
-
 from explicability_msgs.srv import Question
-from explicability_node_py.task_creation_chain import TaskCreationChain
+from explicability_ros.task_creation_chain import TaskCreationChain
 
 from langchain.vectorstores import Chroma
 from langchain.docstore.document import Document
-
 from llama_ros.langchain import LlamaROS
 from llama_ros.langchain import LlamaROSEmbeddings
-
-from datetime import datetime
 
 
 class ExplainabilityNode(Node):
     def __init__(self):
-        super().__init__('explainability_node')
+        super().__init__("explainability_node")
 
         self.logs_number = 0
+        self.embedding_number = 0
         self.msg_queue = []
 
         # Model and embeddings from llama_ros
@@ -55,7 +41,7 @@ class ExplainabilityNode(Node):
 
         self.subscription = self.create_subscription(
             Log,
-            '/rosout',
+            "/rosout",
             self.listener_callback,
             1000,
             callback_group=ReentrantCallbackGroup())
@@ -66,28 +52,17 @@ class ExplainabilityNode(Node):
     def listener_callback(self, log: Log) -> None:
         self.logs_number += 1
         self.msg_queue.append(log)
-        print("Number of logs received= " + str(self.logs_number) +
-              "--- Msg received = " + log.msg)
+        print(f"Log {self.logs_number}: {log.msg}")
 
     def emb_cb(self) -> None:
 
         if self.msg_queue:
             log = self.msg_queue.pop(0)
-
-            # Add documents form rosout subscription
-            now = datetime.now()
-
-            current_time = now.strftime("%H:%M:%S")
-            print("Time Before add =", current_time)
-
+            start = time.process_time()
             self.db.add_texts(texts=[log.msg])
-
-            now = datetime.now()
-
-            current_time = now.strftime("%H:%M:%S")
-            print("Time after add =", current_time)
-
-    # Server callback
+            self.embedding_number += 1
+            print(
+                f"Time to create embedding {self.embedding_number}: {time.process_time() - start}")
 
     def question_server_callback(
         self,
@@ -95,22 +70,16 @@ class ExplainabilityNode(Node):
         response: Question.Response
     ) -> Question.Response:
 
-        self.get_logger().info("Question Service")
-
-        retriever: List[Document] = self.retriever.get_relevant_documents(
+        docuemnts: List[Document] = self.retriever.get_relevant_documents(
             request.question)
 
-        self.get_logger().info("Data Retrieved")
-
         logs = ""
-        for d in retriever:
+        for d in docuemnts:
             logs += d.page_content + "\n"
 
         answer = self.question_chain.run(logs=logs, question=request.question)
 
-        # Server response
-        response.answer = "Number of msg: " + \
-            str(len(self.db.get()['documents'])) + "Respuesta:" + answer
+        response.answer = answer
         return response
 
 
@@ -122,5 +91,5 @@ def main(args=None):
     rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
