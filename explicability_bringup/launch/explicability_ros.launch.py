@@ -17,7 +17,7 @@ def generate_launch_description():
     llama_ros_cmd = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(get_package_share_directory(
-                "agi4ros_bringup"), "launch", "llama_ros.launch.py"))
+                "explicability_bringup"), "launch", "llama_ros.launch.py"))
     )
 
     ld = LaunchDescription()
