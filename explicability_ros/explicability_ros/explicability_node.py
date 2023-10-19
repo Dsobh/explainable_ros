@@ -27,17 +27,16 @@ class ExplainabilityNode(Node):
         # Model and embeddings from llama_ros
         local_llm = LlamaROS(node=self, temp=0.0)
         self.question_chain = TaskCreationChain.from_llm(local_llm)
-        embeddings = LlamaROSEmbeddings(node=self)
 
         # Chroma Database
+        embeddings = LlamaROSEmbeddings(node=self)
         self.db = Chroma(
             embedding_function=embeddings)
 
         self.retriever = self.db.as_retriever(search_kwargs={"k": 10})
 
         self.srv = self.create_service(
-            Question, "question", self.question_server_callback,
-            callback_group=ReentrantCallbackGroup())
+            Question, "question", self.question_server_callback)
 
         self.subscription = self.create_subscription(
             Log,
@@ -46,8 +45,7 @@ class ExplainabilityNode(Node):
             1000,
             callback_group=ReentrantCallbackGroup())
 
-        self.emb_timer = self.create_timer(
-            1, self.emb_cb, callback_group=ReentrantCallbackGroup())
+        self.emb_timer = self.create_timer(0.001, self.emb_cb)
 
     def listener_callback(self, log: Log) -> None:
         self.logs_number += 1
@@ -58,11 +56,11 @@ class ExplainabilityNode(Node):
 
         if self.msg_queue:
             log = self.msg_queue.pop(0)
-            start = time.process_time()
+            start = time.time()
             self.db.add_texts(texts=[log.msg])
             self.embedding_number += 1
             print(
-                f"Time to create embedding {self.embedding_number}: {time.process_time() - start}")
+                f"Time to create embedding {self.embedding_number}: {time.time() - start}")
 
     def question_server_callback(
         self,
