@@ -14,6 +14,8 @@
 
 import rclpy
 from simple_node import Node
+from rclpy.callback_groups import ReentrantCallbackGroup
+
 from rcl_interfaces.msg import Log
 from typing import List
 
@@ -26,13 +28,15 @@ from langchain.docstore.document import Document
 from llama_ros.langchain import LlamaROS
 from llama_ros.langchain import LlamaROSEmbeddings
 
+from datetime import datetime
+
 
 class ExplainabilityNode(Node):
     def __init__(self):
         super().__init__('explainability_node')
 
-        self.srv = self.create_service(
-            Question, "question", self.question_server_callback)
+        self.logs_number = 0
+        self.msg_queue = []
 
         # Model and embeddings from llama_ros
         local_llm = LlamaROS(node=self, temp=0.0)
@@ -41,39 +45,56 @@ class ExplainabilityNode(Node):
 
         # Chroma Database
         self.db = Chroma(
-            collection_name="collection",
-            persist_directory="./DB",
             embedding_function=embeddings)
 
         self.retriever = self.db.as_retriever(search_kwargs={"k": 10})
+
+        self.srv = self.create_service(
+            Question, "question", self.question_server_callback,
+            callback_group=ReentrantCallbackGroup())
 
         self.subscription = self.create_subscription(
             Log,
             '/rosout',
             self.listener_callback,
-            100)
+            1000,
+            callback_group=ReentrantCallbackGroup())
 
-        self.logsNumber = 0
+        self.emb_timer = self.create_timer(
+            1, self.emb_cb, callback_group=ReentrantCallbackGroup())
 
-    # rosout subscription callback
     def listener_callback(self, log: Log) -> None:
-        self.logsNumber += 1
-        # Add documents form rosout subscription
-        self.db.aadd_texts(texts=[log.msg])
-        # self.get_logger().info("Number of logs received= " +
-        #                       str(self.logsNumber) + "--- Msg received = " + log.msg)
-
-        print("Number of logs received= " + str(self.logsNumber) +
+        self.logs_number += 1
+        self.msg_queue.append(log)
+        print("Number of logs received= " + str(self.logs_number) +
               "--- Msg received = " + log.msg)
 
+    def emb_cb(self) -> None:
+
+        if self.msg_queue:
+            log = self.msg_queue.pop(0)
+
+            # Add documents form rosout subscription
+            now = datetime.now()
+
+            current_time = now.strftime("%H:%M:%S")
+            print("Time Before add =", current_time)
+
+            self.db.add_texts(texts=[log.msg])
+
+            now = datetime.now()
+
+            current_time = now.strftime("%H:%M:%S")
+            print("Time after add =", current_time)
+
     # Server callback
+
     def question_server_callback(
         self,
         request: Question.Request,
         response: Question.Response
     ) -> Question.Response:
 
-        self.db.persist()
         self.get_logger().info("Question Service")
 
         retriever: List[Document] = self.retriever.get_relevant_documents(
@@ -88,7 +109,8 @@ class ExplainabilityNode(Node):
         answer = self.question_chain.run(logs=logs, question=request.question)
 
         # Server response
-        response.answer = "Respuesta:" + answer
+        response.answer = "Number of msg: " + \
+            str(len(self.db.get()['documents'])) + "Respuesta:" + answer
         return response
 
 
