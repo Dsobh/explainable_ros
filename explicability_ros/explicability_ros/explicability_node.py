@@ -15,14 +15,41 @@ from langchain.docstore.document import Document
 from llama_ros.langchain import LlamaROS
 from llama_ros.langchain import LlamaROSEmbeddings
 
+from langchain.retrievers.self_query.base import SelfQueryRetriever
+from langchain.chains.query_constructor.base import AttributeInfo
+
+from langchain.retrievers import ContextualCompressionRetriever
+from langchain.retrievers.document_compressors import LLMChainExtractor
+
+metadata_field_info = [
+    AttributeInfo(
+        name="ID",
+        description="The identification number of a waypoint",
+        type="integer",
+    ),
+    AttributeInfo(
+        name="coordinates",
+        description="A position in the world with",
+        type="vector2",
+    ),
+]
+
+document_content_description = "Logs produced during the execution of a robot task"
+
 
 class ExplainabilityNode(Node):
     def __init__(self):
         super().__init__("explainability_node")
 
         self.logs_number = 0
+        self.total_time = 0
         self.embedding_number = 0
         self.msg_queue = []
+        self.previous_msg = ""
+
+        # Para gestionar una cola de los 10 mensajes mas recientes y evitar demasiados duplicados
+        self.recent_msgs = []
+        self.recent_msgs_conter = 0
 
         # Model and embeddings from llama_ros
         local_llm = LlamaROS(node=self, temp=0.0)
@@ -33,7 +60,24 @@ class ExplainabilityNode(Node):
         self.db = Chroma(
             embedding_function=embeddings)
 
-        self.retriever = self.db.as_retriever(search_kwargs={"k": 10})
+        self.retriever = self.db.as_retriever(
+            search_type="mmr", search_kwargs={"k": 20})
+
+        # embeddings_filter = EmbeddingsFilter(
+        #    embeddings=compressor, similarity_threshold=0.76)
+
+        # Multi Query
+        # self.retriever_from_llm = MultiQueryRetriever.from_llm(
+        #    retriever=self.db.as_retriever(), llm=local_llm)
+
+        # Metadata info
+        # self.retriever = SelfQueryRetriever.from_llm(
+        #    local_llm, self.db, document_content_description, metadata_field_info, verbose=True)
+
+        # Context Compression
+        # compressor = LLMChainExtractor.from_llm(local_llm)
+        # self.compression_retriever = ContextualCompressionRetriever(
+        #    base_compressor=compressor, base_retriever=self.retriever)
 
         self.srv = self.create_service(
             Question, "question", self.question_server_callback,
@@ -58,10 +102,31 @@ class ExplainabilityNode(Node):
         if self.msg_queue:
             log = self.msg_queue.pop(0)
             start = time.time()
-            self.db.add_texts(texts=[log.msg])
-            self.embedding_number += 1
+
+            # Cola de recientes y duplicados
+            # if self.recent_msgs_conter < 10:
+            #    if not log in self.recent_msgs:
+            #        self.recent_msgs.insert(self.recent_msgs_conter, log.msg)
+            #        self.db.add_texts(texts=[log.msg])
+            #        self.recent_msgs_conter += 1
+            #        self.embedding_number += 1
+            # else:
+            #    self.recent_msgs_conter = 0
+
+            # Eliminar solo el mensaje anterior
+            if log.msg != self.previous_msg:
+                self.db.add_texts(texts=[log.msg])
+                self.previous_msg = log.msg
+            else:
+                print("este no ha entrado:" + log.msg)
+
+            # self.db.add_texts(texts=[log.msg])
+            # self.embedding_number += 1
+
+            emb_time = time.time() - start
+            self.total_time += emb_time
             print(
-                f"Time to create embedding {self.embedding_number}: {time.time() - start}")
+                f"Time to create embedding {self.embedding_number}: {emb_time} | Total time: {self.total_time}")
 
     def question_server_callback(
         self,
