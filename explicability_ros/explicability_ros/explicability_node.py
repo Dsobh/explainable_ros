@@ -7,6 +7,7 @@ from simple_node import Node
 from rclpy.callback_groups import ReentrantCallbackGroup
 
 from rcl_interfaces.msg import Log
+from builtin_interfaces.msg import Time
 from explicability_msgs.srv import Question
 from explicability_ros.task_creation_chain import TaskCreationChain
 
@@ -14,27 +15,6 @@ from langchain.vectorstores import Chroma
 from langchain.docstore.document import Document
 from llama_ros.langchain import LlamaROS
 from llama_ros.langchain import LlamaROSEmbeddings
-
-from langchain.retrievers.self_query.base import SelfQueryRetriever
-from langchain.chains.query_constructor.base import AttributeInfo
-
-from langchain.retrievers import ContextualCompressionRetriever
-from langchain.retrievers.document_compressors import LLMChainExtractor
-
-metadata_field_info = [
-    AttributeInfo(
-        name="ID",
-        description="The identification number of a waypoint",
-        type="integer",
-    ),
-    AttributeInfo(
-        name="coordinates",
-        description="A position in the world with",
-        type="vector2",
-    ),
-]
-
-document_content_description = "Logs produced during the execution of a robot task"
 
 
 class ExplainabilityNode(Node):
@@ -63,22 +43,6 @@ class ExplainabilityNode(Node):
         self.retriever = self.db.as_retriever(
             search_type="mmr", search_kwargs={"k": 20})
 
-        # embeddings_filter = EmbeddingsFilter(
-        #    embeddings=compressor, similarity_threshold=0.76)
-
-        # Multi Query
-        # self.retriever_from_llm = MultiQueryRetriever.from_llm(
-        #    retriever=self.db.as_retriever(), llm=local_llm)
-
-        # Metadata info
-        # self.retriever = SelfQueryRetriever.from_llm(
-        #    local_llm, self.db, document_content_description, metadata_field_info, verbose=True)
-
-        # Context Compression
-        # compressor = LLMChainExtractor.from_llm(local_llm)
-        # self.compression_retriever = ContextualCompressionRetriever(
-        #    base_compressor=compressor, base_retriever=self.retriever)
-
         self.srv = self.create_service(
             Question, "question", self.question_server_callback,
             callback_group=ReentrantCallbackGroup())
@@ -103,30 +67,30 @@ class ExplainabilityNode(Node):
             log = self.msg_queue.pop(0)
             start = time.time()
 
-            # Cola de recientes y duplicados
-            # if self.recent_msgs_conter < 10:
-            #    if not log in self.recent_msgs:
-            #        self.recent_msgs.insert(self.recent_msgs_conter, log.msg)
-            #        self.db.add_texts(texts=[log.msg])
-            #        self.recent_msgs_conter += 1
-            #        self.embedding_number += 1
-            # else:
-            #    self.recent_msgs_conter = 0
-
             # Eliminar solo el mensaje anterior
             if log.msg != self.previous_msg:
-                self.db.add_texts(texts=[log.msg])
-                self.previous_msg = log.msg
-            else:
-                print("este no ha entrado:" + log.msg)
+                msg_sec = log.stamp.sec
+                msg_nanosec = log.stamp.nanosec
+                unix_timestamp = msg_sec + msg_nanosec / 1e9
 
-            # self.db.add_texts(texts=[log.msg])
-            # self.embedding_number += 1
+                self.db.add_texts(
+                    texts=[str(unix_timestamp) + " - " + log.msg])
+                self.previous_msg = log.msg
+                self.embedding_number += 1
 
             emb_time = time.time() - start
             self.total_time += emb_time
             print(
                 f"Time to create embedding {self.embedding_number}: {emb_time} | Total time: {self.total_time}")
+
+    def order_retrievals(self, docuemnt_list):
+
+        aux_list = []
+
+        for d in docuemnt_list:
+            aux_list.append(d.page_content + "\n")
+
+        return sorted(aux_list)
 
     def question_server_callback(
         self,
@@ -138,8 +102,13 @@ class ExplainabilityNode(Node):
             request.question)
 
         logs = ""
-        for d in docuemnts:
-            logs += d.page_content + "\n"
+        sortered_list = self.order_retrievals(docuemnts)
+
+        for i in sortered_list:
+            logs += i
+
+        # for d in docuemnts:
+        #    logs += d.page_content + "\n"
 
         answer = self.question_chain.run(logs=logs, question=request.question)
 

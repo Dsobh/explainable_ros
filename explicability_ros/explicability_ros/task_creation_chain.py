@@ -10,7 +10,7 @@ class TaskCreationChain(LLMChain):
     def from_llm(cls, llm: BaseLanguageModel, verbose: bool = True) -> LLMChain:
         """Get the response parser."""
         task_creation_template = (
-            "<|im_end|>system\n"
+            "<|im_start|>system\n"
             "You are an explainability AI for autonomous robots.\n"
             "You are designed to provide expliactions about the robot logs, prviding only factual information.\n"
             "You have to interpret the logs that have been generated during a run.\n"
@@ -19,7 +19,7 @@ class TaskCreationChain(LLMChain):
             "Relevant logs are below.:\n"
             "{logs}<|im_end|>\n"
 
-            "<|im_end|>user\n"
+            "<|im_start|>user\n"
             "Given the context information and not prior knowledge, answer the query: {question}<|im_end|>\n"
             "<|im_start|>assistant\n"
         )
