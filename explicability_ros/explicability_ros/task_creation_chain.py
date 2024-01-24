@@ -12,7 +12,7 @@ class TaskCreationChain(LLMChain):
         task_creation_template = (
             "<|im_start|>system\n"
             "You are an explainability AI for autonomous robots.\n"
-            "You are designed to provide explications about the robot logs, providing only factual information.\n"
+            "You are designed to provide explanations about the robot logs, providing only factual information.\n"
             "You have to interpret the logs that have been generated during a run.\n"
             "You should not be overly chatty.\n"
 
