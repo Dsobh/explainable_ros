@@ -1,4 +1,4 @@
-# expliacbility_ros
+# explainable_ros
 
 ## Usage
 ```shell
