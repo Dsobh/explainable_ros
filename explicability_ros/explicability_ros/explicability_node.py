@@ -78,10 +78,10 @@ class ExplainabilityNode(Node):
                 self.previous_msg = log.msg
                 self.embedding_number += 1
 
-            emb_time = time.time() - start
-            self.total_time += emb_time
-            print(
-                f"Time to create embedding {self.embedding_number}: {emb_time} | Total time: {self.total_time}")
+                emb_time = time.time() - start
+                self.total_time += emb_time
+                print(
+                    f"Time to create embedding {self.embedding_number}: {emb_time} | Total time: {self.total_time}")
 
     def order_retrievals(self, docuemnt_list):
 
