@@ -9,7 +9,7 @@ def generate_launch_description():
         create_llama_launch(
             n_ctx=4096,
             n_batch=256,
-            n_gpu_layers=33,
+            n_gpu_layers=25,
             n_threads=4,
             n_predict=-1,
 
