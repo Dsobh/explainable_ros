@@ -20,7 +20,7 @@ class TaskCreationChain(LLMChain):
             "{logs}<|im_end|>\n"
 
             "<|im_start|>user\n"
-            "Given the context information and not prior knowledge, answer the query: {question}<|im_end|>\n"
+            "Given the context information and no prior knowledge, answer the query: {question}<|im_end|>\n"
             "<|im_start|>assistant\n"
         )
         prompt = PromptTemplate(
