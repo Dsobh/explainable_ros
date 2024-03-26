@@ -11,6 +11,7 @@
 
   <depend>rclpy</depend>
   <depend>rcl_interfaces</depend>
+  <depend>sensor_msgs</depend>
 
   <exec_depend>rosidl_default_generators</exec_depend>
   <exec_depend>ros2launch</exec_depend>

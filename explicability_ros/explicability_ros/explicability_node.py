@@ -11,10 +11,11 @@ from builtin_interfaces.msg import Time
 from explicability_msgs.srv import Question
 from explicability_ros.task_creation_chain import TaskCreationChain
 
-from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 from langchain.docstore.document import Document
 from llama_ros.langchain import LlamaROS
-from llama_ros.langchain import LlamaROSEmbeddings
+
+from langchain_community.embeddings import HuggingFaceBgeEmbeddings
 
 
 class ExplainabilityNode(Node):
@@ -35,13 +36,23 @@ class ExplainabilityNode(Node):
         local_llm = LlamaROS(node=self, temp=0.0)
         self.question_chain = TaskCreationChain.from_llm(local_llm)
 
+        # HuggingFace Embeddings Model
+        model_name = "mixedbread-ai/mxbai-embed-large-v1"
+        model_kwargs = {"device": "cpu"}
+        encode_kwargs = {"normalize_embeddings": True}
+
         # Chroma Database
-        embeddings = LlamaROSEmbeddings(node=self)
+        self.embeddings_model = HuggingFaceBgeEmbeddings(
+            model_name=model_name,
+            model_kwargs=model_kwargs,
+            encode_kwargs=encode_kwargs
+        )
+        # embeddings = LlamaROSEmbeddings(node=self)
         self.db = Chroma(
-            embedding_function=embeddings)
+            embedding_function=self.embeddings_model)
 
         self.retriever = self.db.as_retriever(
-            search_type="mmr", search_kwargs={"k": 20})
+            search_type="similarity", search_kwargs={"k": 10})
 
         self.srv = self.create_service(
             Question, "question", self.question_server_callback,

@@ -22,7 +22,8 @@ setup(
     entry_points={
         "console_scripts": [
             "explicability_node = explicability_ros.explicability_node:main",
-            "explicability_client_node = explicability_ros.explicability_client_node:main"
+            "explicability_client_node = explicability_ros.explicability_client_node:main",
+            "vexp_node = explicability_ros.vexp_node:main"
         ],
     },
 )

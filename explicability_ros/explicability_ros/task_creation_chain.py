@@ -10,18 +10,17 @@ class TaskCreationChain(LLMChain):
     def from_llm(cls, llm: BaseLanguageModel, verbose: bool = True) -> LLMChain:
         """Get the response parser."""
         task_creation_template = (
-            "<|im_start|>system\n"
-            "You are an explainability AI for autonomous robots.\n"
-            "You are designed to provide expliactions about the robot logs, prviding only factual information.\n"
-            "You have to interpret the logs that have been generated during a run.\n"
-            "You should not be overly chatty.\n"
+            "You are an explainability AI tool for ROS 2 mobile robots. "
+            "Your goal is to detect possible cyberattacks. "
+            "You have to detect anomalous behaviour within the robot's data. "
+            "You have to interpret the robot's data paying attention to the publication rates of cmd_vel, that is between is 8.0Hz and 23.0Hz.\n\n"
 
-            "Relevant logs are below.:\n"
-            "{logs}<|im_end|>\n"
+            "Relevant data:\n"
+            "{logs}\n\n"
 
-            "<|im_start|>user\n"
-            "Given the context information and not prior knowledge, answer the query: {question}<|im_end|>\n"
-            "<|im_start|>assistant\n"
+            "USER: "
+            "Given the context information and not prior knowledge, answer the query: {question}\n"
+            "ASSISTANT:"
         )
         prompt = PromptTemplate(
             template=task_creation_template,
