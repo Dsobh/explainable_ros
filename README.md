@@ -14,4 +14,4 @@ $ ros2 service call /question explicability_msgs/srv/Question "{'question': 'Wha
 ![alt text](https://github.com/Dsobh/explainable_ROS/blob/main/images/logos/logo_demarce.png)
 ![alt text](https://github.com/Dsobh/explainable_ROS/blob/main/images/logos/logo_edmarce.png)
 
-![alt text](https://github.com/Dsobh/explainable_ROS/blob/main/images/logos/logo_tescac.pdf)
+![alt text](https://github.com/Dsobh/explainable_ROS/blob/main/images/logos/BandaLogos_INCIBE_page-0001.jpg)
