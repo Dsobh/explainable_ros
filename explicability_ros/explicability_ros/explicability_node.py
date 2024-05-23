@@ -1,21 +1,19 @@
 
 import time
-from typing import List
-
 import rclpy
-from simple_node import Node
+from rclpy.node import Node
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
 
 from rcl_interfaces.msg import Log
-from builtin_interfaces.msg import Time
 from explicability_msgs.srv import Question
-from explicability_ros.task_creation_chain import TaskCreationChain
 
 from langchain_community.vectorstores import Chroma
-from langchain.docstore.document import Document
-from llama_ros.langchain import LlamaROS
-
 from langchain_community.embeddings import HuggingFaceBgeEmbeddings
+from langchain.prompts import PromptTemplate
+from llama_ros.langchain import LlamaROS
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
 
 
 class ExplainabilityNode(Node):
@@ -32,9 +30,29 @@ class ExplainabilityNode(Node):
         self.recent_msgs = []
         self.recent_msgs_conter = 0
 
+        task_creation_template = (
+            "You are an explainability AI tool for ROS 2 mobile robots. "
+            "Your goal is to detect possible obstacles. "
+            "You have to comparing obstacle detected logs with image-to-text logs. "
+            "You have to interpret the robot's data.\n\n"
+
+            "Relevant data:\n"
+            "{logs}\n\n"
+
+            "USER: "
+            "Given the context information and not prior knowledge, answer the query: {question}\n"
+            "ASSISTANT:"
+        )
+        prompt = PromptTemplate(
+            template=task_creation_template,
+            input_variables=[
+                "question",
+                "logs",
+            ],
+        )
+
         # Model and embeddings from llama_ros
-        local_llm = LlamaROS(node=self, temp=0.0)
-        self.question_chain = TaskCreationChain.from_llm(local_llm)
+        local_llm = LlamaROS(temp=0.0)
 
         # HuggingFace Embeddings Model
         model_name = "mixedbread-ai/mxbai-embed-large-v1"
@@ -52,7 +70,25 @@ class ExplainabilityNode(Node):
             embedding_function=self.embeddings_model)
 
         self.retriever = self.db.as_retriever(
-            search_type="similarity", search_kwargs={"k": 10})
+            search_type="similarity", search_kwargs={"k": 5})
+
+        # chain
+        def format_docs(docuemnts):
+            logs = ""
+            sortered_list = self.order_retrievals(docuemnts)
+
+            for l in sortered_list:
+                logs += l
+
+        self.question_chain = (
+            {
+                "logs": self.retriever | format_docs,
+                "question": RunnablePassthrough()
+            }
+            | prompt
+            | local_llm
+            | StrOutputParser()
+        )
 
         self.srv = self.create_service(
             Question, "question", self.question_server_callback,
@@ -109,28 +145,17 @@ class ExplainabilityNode(Node):
         response: Question.Response
     ) -> Question.Response:
 
-        docuemnts: List[Document] = self.retriever.get_relevant_documents(
-            request.question)
-
-        logs = ""
-        sortered_list = self.order_retrievals(docuemnts)
-
-        for i in sortered_list:
-            logs += i
-
-        # for d in docuemnts:
-        #    logs += d.page_content + "\n"
-
-        answer = self.question_chain.run(logs=logs, question=request.question)
-
+        answer = self.question_chain.invoke(request.question)
         response.answer = answer
         return response
 
 
 def main(args=None):
     rclpy.init(args=args)
+    executor = MultiThreadedExecutor()
     node = ExplainabilityNode()
-    node.join_spin()
+    executor.add_node(node)
+    executor.spin()
     node.destroy_node()
     rclpy.shutdown()
 
