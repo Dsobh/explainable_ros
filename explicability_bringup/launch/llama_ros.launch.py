@@ -22,7 +22,7 @@ def generate_launch_description():
             model_repo="liminerity/M7-7b-GGUF",
             model_filename="multiverse-experiment-slerp-7b.Q5_K_M.gguf",
 
-            stop="INST",
+            stopping_words=["INST"],
 
             debug=False
         )

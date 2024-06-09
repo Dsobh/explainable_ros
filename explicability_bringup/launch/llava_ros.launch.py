@@ -46,9 +46,9 @@ def generate_launch_description():
 
             prefix="[INST]",
             suffix="[/INST]",
-            stop="[INST]",
+            stopping_words=["[INST]"],
 
-            file="mistral.txt",
+            system_prompt_type="mistral",
 
             debug=False
         )
