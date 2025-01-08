@@ -80,6 +80,8 @@ class ExplainabilityNode(Node):
             for l in sortered_list:
                 logs += l
 
+            return logs
+
         self.question_chain = (
             {
                 "logs": self.retriever | format_docs,
