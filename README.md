@@ -33,12 +33,29 @@ On the other hand, the high-level representation of the components that make up 
 ### Installation
 
 ### Usage
+
+#### Local
+
 ```shell
-$ ros2 launch explicability_bringup explicability_ros.launch.py
+ros2 launch explicability_bringup explicability_ros.launch.py
 ```
 
 ```shell
-$ ros2 service call /question explicability_msgs/srv/Question "{'question': 'What is happening?'}"
+ros2 service call /question explicability_msgs/srv/Question "{'question': 'What is happening?'}"
+```
+
+#### Docker
+
+Run container:
+
+```shell
+sudo docker run --rm -it --entrypoint bash <docker_name:tag>
+```
+
+Run second container:
+
+```shell
+docker exec -it <container_id> bash
 ```
 
 ## Related Works
