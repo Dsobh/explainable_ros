@@ -20,7 +20,11 @@ On the other hand, the high-level representation of the components that make up 
 
 1. [How To](#how-to)
     - [Installation](#installation)
+        - [Prerequisites](#prerequisites)
+        - [explainable_ros Installation Steps](#explainable_ros-installation-steps)
     - [Usage](#usage)
+        - [Local](#local)
+        - [Docker](#docker)
 2. [Related Works](#related-works)
     - [Other Software Projects](#other-software-projects)
     - [Related Datasets](#related-datasets)
@@ -32,19 +36,50 @@ On the other hand, the high-level representation of the components that make up 
 
 ### Installation
 
+Take into account that the examples shown in the usage section have been made using this [rosbag](https://doi.org/10.5281/zenodo.10896141).
+
+#### Prerequisites
+
+You must have llama_ros and CUDA Toolkit (llama_ros dependency) installed. 
+
+#### explainable_ros Installation Steps
+
+```shell
+cd ros2_ws/src
+git clone https://github.com/Dsobh/explainable_ros.git
+pip install -r explainable_ros/requirements.txt
+
+cd ../
+colcon build
+```
+
+You can also use docker. To do this you can compile the dockerfile found in the root of this repository or download the corresponding image from Dockerhub.
+
 ### Usage
 
 #### Local
+
+First, we need to start the service server:
 
 ```shell
 ros2 launch explicability_bringup explicability_ros.launch.py
 ```
 
+To generate data we need to have some active topics. For this example we play a public rosbag:
+
+```shell
+ros2 bag play ...
+```
+
+Finally, we can make question to the system through the service client:
+
 ```shell
 ros2 service call /question explicability_msgs/srv/Question "{'question': 'What is happening?'}"
 ```
 
-#### Docker
+[ADD IMG]
+
+#### Docker [WIP]
 
 Run container:
 
