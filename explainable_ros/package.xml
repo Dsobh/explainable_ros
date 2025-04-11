@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>explicability_ros</name>
-  <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="dsobh@unileon.es">dsobh</maintainer>
-  <license>TODO: License declaration</license>
+  <name>explainable_ros</name>
+  <version>0.5.0</version>
+  <description>Explainability tool for ROS2</description>
+  <maintainer email="dsobh@unileon.es">David Sobrín-Hidalgo</maintainer>
+  <license>MIT</license>
 
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
 

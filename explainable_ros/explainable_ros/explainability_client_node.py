@@ -1,8 +1,7 @@
-
 import sys
 import rclpy
 from rclpy.node import Node
-from explicability_msgs.srv import Question
+from explainable_ros_msgs.srv import Question
 
 
 class ExplainabilityClientNode(Node):

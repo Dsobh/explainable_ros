@@ -1,3 +1,2 @@
-langchain==0.2.7
 sentence_transformers==4.0.1
 chromadb==0.6.3

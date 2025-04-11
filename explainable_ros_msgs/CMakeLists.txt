@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(explicability_msgs)
+project(explainable_ros_msgs)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)

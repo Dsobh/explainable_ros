@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>explicability_msgs</name>
+  <name>explainable_ros_msgs</name>
   <version>0.0.0</version>
-  <description>explicability_msgs</description>
+  <description>explainable_ros_msgs</description>
   <maintainer email="dsobh@unileon.es">David Sobrín-Hidalgo</maintainer>
   <license>MIT</license>
 
