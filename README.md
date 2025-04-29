@@ -59,6 +59,19 @@ You can also use docker. To do this you can compile the dockerfile found in the 
 
 #### Local
 
+```
+ros2 llama launch ~/ros2_ws/src/llama_ros/llama_bringup/models/bge-base-en-v1.5.yaml (embeddings)
+
+ros2 llama launch ~/ros2_ws/src/llama_ros/llama_bringup/models/jina-reranker.yaml (reranking)
+
+ros2 llama launch ~/ros2_ws/src/llama_ros/llama_bringup/models/Qwen2.yaml (base model)
+
+ros2 run explainable_ros explainability_node (main node)
+
+ros2 service call /question explainable_ros_msgs/srv/Question "{'question': 'What is happening?'}" (cliente - pregunta)
+```
+
+
 First, we need to start the service server:
 
 ```shell

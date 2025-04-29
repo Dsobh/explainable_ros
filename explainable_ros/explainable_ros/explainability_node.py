@@ -6,7 +6,7 @@ from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
 
 from rcl_interfaces.msg import Log
-from explicability_msgs.srv import Question
+from explainable_ros_msgs.srv import Question
 
 
 from langchain_chroma import Chroma
