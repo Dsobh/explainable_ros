@@ -100,8 +100,11 @@ class ExplainabilityNode(Node):
 
     def listener_callback(self, log: Log) -> None:
         self.logs_number += 1
-        self.msg_queue.append(log)
-        print(f"Log {self.logs_number}: {log.msg}")
+
+        # For not considering llama_ros logs
+        if log.name != "llama.llama_embedding_node":
+            self.msg_queue.append(log)
+            print(f"Log {self.logs_number}: {log.msg}")
 
     def emb_cb(self) -> None:
 
