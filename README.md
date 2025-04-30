@@ -57,39 +57,49 @@ You can also use docker. To do this you can compile the dockerfile found in the 
 
 ### Usage
 
+For the examples shown in this section we use the following models (available in llama_ros repository):
+
+- *Embbeding model*: bge-base-en-v1.5.yaml
+- *Reranker model*: jina-reranker
+- *Base model*: Qwen2
+
 #### Local
 
-```
-ros2 llama launch ~/ros2_ws/src/llama_ros/llama_bringup/models/bge-base-en-v1.5.yaml (embeddings)
-
-ros2 llama launch ~/ros2_ws/src/llama_ros/llama_bringup/models/jina-reranker.yaml (reranking)
-
-ros2 llama launch ~/ros2_ws/src/llama_ros/llama_bringup/models/Qwen2.yaml (base model)
-
-ros2 run explainable_ros explainability_node (main node)
-
-ros2 service call /question explainable_ros_msgs/srv/Question "{'question': 'What is happening?'}" (cliente - pregunta)
-```
-
-
-First, we need to start the service server:
+- Run the embbeding model:
 
 ```shell
-ros2 launch explicability_bringup explicability_ros.launch.py
-```
+ros2 llama launch ~/ros2_ws/src/llama_ros/llama_bringup/models/bge-base-en-v1.5.yaml
+``` 
 
-To generate data we need to have some active topics. For this example we play a public rosbag:
-
-```shell
-ros2 bag play ...
-```
-
-Finally, we can make question to the system through the service client:
+- Run reranker model:
 
 ```shell
-ros2 service call /question explicability_msgs/srv/Question "{'question': 'What is happening?'}"
+ros2 llama launch ~/ros2_ws/src/llama_ros/llama_bringup/models/jina-reranker.yaml
 ```
 
+- Run the base model:
+
+```shell
+ros2 llama launch ~/ros2_ws/src/llama_ros/llama_bringup/models/Qwen2.yaml
+```
+
+- Now you can run the main node of the system:
+
+```shell
+ros2 run explainable_ros explainability_node
+```
+
+This node subscribes to the rosout topic and process the logs to add them to the context of the LLM.
+You can play a rosbag file in order to generate logs and test the operation of the system.
+
+
+- To request a explanation you should use the /question service:
+
+```shell
+ros2 service call /question explainable_ros_msgs/srv/Question "{'question': 'What is happening?'}"
+```
+
+##### Example
 [ADD IMG]
 
 #### Docker [WIP]
