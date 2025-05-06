@@ -22,6 +22,7 @@ setup(
             "explainability_node = explainable_ros.explainability_node:main",
             "explainability_client_node = explainable_ros.explainability_client_node:main",
             "vexp_node = explainable_ros.vexp_node:main",
+            "visual_descriptor_node = explainable_ros.visual_descriptor_node:main",
         ],
     },
 )
