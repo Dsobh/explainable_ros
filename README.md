@@ -116,6 +116,22 @@ Run second container:
 docker exec -it <container_id> bash
 ```
 
+#### Using VLM component
+
+- Run a VLM model
+
+```shell
+ros2 launch llama_bringup minicpm-2.6.launch.py
+```
+
+- Run the visual describer node
+
+```shell
+ros2 run explainable_ros visual_descriptor_node
+```
+
+This node is subscribed to the /camera/rgb/image_raw topic and every 5 seconds describes the image captured by the camera and logs it in the /rosout.
+
 ## Related Works
 
  ### Other Software Projects

@@ -63,7 +63,7 @@ class ExplainabilityNode(Node):
         prompt = ChatPromptTemplate.from_messages(
             [
                 SystemMessage(
-                    "You are an explainability AI tool for ROS 2 mobile robots. Your goal is to detect possible obstacles. You have to comparing obstacle detected logs with image-to-text logs. You have to interpret the robot's data.\n\n"
+                    "You are analyzing ROS 2 logs with image descriptions from a service robot operating strictly indoors, inside an apartment. The robot moves slowly and captures an image every 3 seconds. Your task is to detect potential cyberattacks on the camera, such as image substitution or denial-of-service (DoS). Ignore normal repetition due to slow movement. Instead, flag any sudden, unexplained changes in the environment (e.g., indoor to outdoor), or inconsistent sequences suggesting tampering or falsification.\n\n"
                 ),
                 HumanMessagePromptTemplate.from_template(
                     "Taking into account the following logs:{context}\n\n{question}"
@@ -113,7 +113,7 @@ class ExplainabilityNode(Node):
             start = time.time()
 
             # Eliminar solo el mensaje anterior
-            if log.msg != self.previous_msg:
+            if log.msg != self.previous_msg and log.name != "welcome_app_tiago":
                 msg_sec = log.stamp.sec
                 msg_nanosec = log.stamp.nanosec
                 unix_timestamp = msg_sec + msg_nanosec / 1e9
