@@ -1,4 +1,4 @@
-# explainable_ros [WIP]
+# explainable_ros
 
 This repository provides a ROS 2 package for generating explanations in autonomous robots (ROS 2) based on log analysis using LLMs.
 
